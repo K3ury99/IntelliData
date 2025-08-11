@@ -337,6 +337,19 @@
             opacity: 0;
             transform: translateX(-100%);
         }
+
+        .mobile-button-entrar {
+            display: block;
+            text-align: left;
+            color: #374151; /* text-gray-700 */
+            font-weight: 500; /* font-medium */
+            padding: 0.5rem 0.75rem; /* py-2 px-3 */
+            border-radius: 0.375rem; /* rounded-md */
+            transition: color 0.2s ease-in-out;
+        }
+        .mobile-button-entrar:hover {
+            color: #4f46e5; /* text-indigo-700 */
+        }
     </style>
 </head>
 <body class="bg-white text-gray-900 leading-normal tracking-tight">
@@ -368,7 +381,7 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-white p-4 space-y-2">
             <a href="#inicio" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Inicio</a>
-            <a href="./IntelliData/ControlPanel.html" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Entrar</a>
+            <a href="./IntelliData/ControlPanel.html" class="mobile-button-entrar">Entrar</a>
             <a href="#servicios" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Servicios</a>
             <a href="#testimonios" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Testimonios</a>
             <a href="#contacto-form-section" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Contacto</a>
@@ -1101,7 +1114,7 @@
         document.getElementById('bar-chart-insight-button').addEventListener('click', async () => {
             const outputElement = document.getElementById('bar-chart-insight-output');
             const formattedData = barData.map(d => `${d.year}: ${d.efficiency}%`).join(', ');
-            const prompt = `Analiza los siguientes datos de eficiencia operativa a lo largo de los años y proporciona una conclusión concisa en español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
+            const prompt = `Analiza los siguientes datos de eficiencia operativa a lo largo de los años y proporciona una conclusión concisa in español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
             const insight = await callGeminiAPI(prompt, outputElement);
             outputElement.innerHTML = insight;
         });
@@ -1109,7 +1122,7 @@
         document.getElementById('line-chart-insight-button').addEventListener('click', async () => {
             const outputElement = document.getElementById('line-chart-insight-output');
             const formattedData = lineData.map(d => `${d.year}: ${d.clients} clientes`).join(', ');
-            const prompt = `Analiza los siguientes datos de crecimiento de clientes a lo largo de los años y proporciona una conclusión concisa en español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
+            const prompt = `Analiza los siguientes datos de crecimiento de clientes a lo largo de los años y proporciona una conclusión concisa in español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
             const insight = await callGeminiAPI(prompt, outputElement);
             outputElement.innerHTML = insight;
         });
@@ -1123,7 +1136,7 @@
                 return;
             }
             const formattedData = JSON.stringify(barData); // Send data as JSON for detailed questions
-            const prompt = `Basado en los siguientes datos de eficiencia operativa (${formattedData}), responde a la pregunta en español: "${question}". Sé conciso.`;
+            const prompt = `Basado en los siguientes datos de eficiencia operativa (${formattedData}), responde a la pregunta in español: "${question}". Sé conciso.`;
             const answer = await callGeminiAPI(prompt, outputElement);
             outputElement.innerHTML = answer;
         });
@@ -1136,7 +1149,7 @@
                 return;
             }
             const formattedData = JSON.stringify(lineData); // Send data as JSON for detailed questions
-            const prompt = `Basado en los siguientes datos de crecimiento de clientes (${formattedData}), responde a la pregunta en español: "${question}". Sé conciso.`;
+            const prompt = `Basado en los siguientes datos de crecimiento de clientes (${formattedData}), responde a la pregunta in español: "${question}". Sé conciso.`;
             const answer = await callGeminiAPI(prompt, outputElement);
             outputElement.innerHTML = answer;
         });
@@ -1149,7 +1162,7 @@
                 outputElement.innerHTML = '<span class="text-red-500">Por favor, ingresa una palabra clave.</span>';
                 return;
             }
-            const prompt = `Genera 3 ideas de slogans de marketing cortos y atractivos en español para una empresa de análisis de datos con IA, basados en la palabra clave/tema: "${keyword}". Numéralos.`;
+            const prompt = `Genera 3 ideas de slogans de marketing cortos y atractivos in español para una empresa de análisis de datos con IA, basados en la palabra clave/tema: "${keyword}". Numéralos.`;
             const slogans = await callGeminiAPI(prompt, outputElement);
             outputElement.innerHTML = slogans;
         });
@@ -1403,6 +1416,23 @@
         // window.addEventListener('beforeunload', () => {
         //     clearInterval(messageInterval);
         // });
+
+        // Ensure mobile menu links work correctly
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                if (this.getAttribute('href').startsWith('./IntelliData/')) {
+                    // Allow default navigation for external links
+                    return;
+                }
+                e.preventDefault(); // Prevent default for internal navigation
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+               
+                }
+            });
+        });
 
     </script>
 
