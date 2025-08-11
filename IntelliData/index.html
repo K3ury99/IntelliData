@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliData - Análisis de Datos con IA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- D3.js CDN for interactive chart -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Lightest gray for subtle background, keeping it clean */
+        }
+        /* Custom styles for the D3 chart containers */
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            overflow: hidden; /* Ensures chart elements stay within bounds */
+        }
+        .chart-title {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #1a202c; /* text-gray-900 */
+        }
+        .chart-tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            background: rgba(30, 41, 59, 0.9); /* slate-800 with opacity */
+            color: white;
+            border-radius: 0.5rem; /* rounded-lg */
+            pointer-events: none;
+            font-size: 0.95rem; /* text-sm */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        /* D3 specific styles for better rendering */
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #cbd5e1; /* slate-300 */
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-size: 13px;
+            fill: #475569; /* slate-600 */
+        }
+        .bar:hover {
+            opacity: 0.9;
+        }
+        .line-dot:hover {
+            stroke-width: 3px;
+        }
+        .arc path:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Transition for contact form visibility */
+        .contact-form-transition {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .contact-form-transition.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Chatbot specific styles */
+        #chatbot-bubble {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4f46e5; /* Indigo-600 */
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+        #chatbot-bubble:hover {
+            transform: scale(1.05);
+        }
+        #chatbot-bubble svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        #chatbot-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            transform: translateY(100%) scale(0.8);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #chatbot-window.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #chatbot-header {
+            background-color: #4f46e5; /* Indigo-600 */
+            color: white;
+            padding: 1rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        #chatbot-header .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #chatbot-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f8fafc; /* Lightest gray */
+        }
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+        .message-user {
+            background-color: #e0e7ff; /* Indigo-100 */
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .message-ai {
+            background-color: #e2e8f0; /* Slate-200 */
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .message-loading {
+            background-color: #e2e8f0; /* Slate-200 */
+            align-self: flex-start;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            font-style: italic;
+            color: #475569;
+        }
+
+        #chatbot-input-area {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0; /* Slate-200 */
+            background-color: white;
+        }
+        #chatbot-input {
+            flex-grow: 1;
+            border: 1px solid #cbd5e1; /* Slate-300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+            margin-right: 0.75rem;
+        }
+        #chatbot-send-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        #chatbot-send-button:hover {
+            background-color: #4338ca; /* Indigo-700 */
+        }
+        #frequent-questions {
+            padding: 1rem;
+            background-color: #f0f4f8; /* Light gray for suggestions */
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .freq-q-button {
+            background-color: #c7d2fe; /* Indigo-200 */
+            color: #312e81; /* Indigo-800 */
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+            display: inline-block; /* For better layout with multiple questions */
+        }
+        .freq-q-button:hover {
+            background-color: #a5b4fc; /* Indigo-300 */
+        }
+
+        /* Scroll to Top Button Styles */
+        #scroll-to-top-button {
+            position: fixed;
+            bottom: 90px; /* Position above chatbot bubble */
+            right: 20px;
+            background-color: #10b981; /* Emerald-500 */
+            color: white;
+            border-radius: 50%;
+            width: 50px; /* Slightly smaller than chatbot for visual hierarchy */
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 998; /* Below chatbot, above content */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #scroll-to-top-button.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #scroll-to-top-button:hover {
+            background-color: #059669; /* Emerald-700 */
+        }
+        #scroll-to-top-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Global Modal Styles */
+        #global-modal {
+            /* These styles are already set in the HTML for `hidden` state, but useful to keep here for reference on `visible` state */
+            background-color: rgba(15, 23, 42, 0.75); /* slate-900 with opacity */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            opacity: 0;
+            transform: scale(0.8);
+            visibility: hidden;
+        }
+        #global-modal.show {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+        }
+        #global-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        #modal-close-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+        }
+        #modal-close-button:hover {
+            color: #1e293b; /* slate-800 */
+        }
+
+        /* Floating Message Styles */
+        #floating-message-container {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(-100%);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        #floating-message-container.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        #floating-message-container.hide {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 leading-normal tracking-tight">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
+        <nav class="container mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8">
+            <a href="#" class="text-3xl font-bold text-indigo-700 rounded-md p-2">
+                IntelliData
+            </a>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#inicio" class="nav-link text-gray-700 hover:text-indigo-700 font-medium transition-colors duration-200 rounded-md py-2 px-3">Inicio</a>
+                <a href="#servicios" class="nav-link text-gray-700 hover:text-indigo-700 font-medium transition-colors duration-200 rounded-md py-2 px-3">Servicios</a>
+                <a href="#testimonios" class="nav-link text-gray-700 hover:text-indigo-700 font-medium transition-colors duration-200 rounded-md py-2 px-3">Testimonios</a>
+                <a href="#contacto-form-section" class="nav-link text-gray-700 hover:text-indigo-700 font-medium transition-colors duration-200 rounded-md py-2 px-3">Contacto</a>
+                <a href="ControlPanel.html" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-200 ml-4">Entrar</a>
+                <a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-200 ml-4">Iniciar Sesión</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition-colors duration-200 mr-3 text-sm">Login</a>
+                <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white p-4 space-y-2">
+            <a href="#inicio" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Inicio</a>
+            <a href="#servicios" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Servicios</a>
+            <a href="#testimonios" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Testimonios</a>
+            <a href="#contacto-form-section" class="nav-link block text-gray-700 hover:text-indigo-700 font-medium py-2 px-3 rounded-md">Contacto</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="bg-gradient-to-r from-indigo-50 to-white py-20 lg:py-32 text-center">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <h1 class="text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+                Transforma Datos en Decisiones Inteligentes con <span class="text-indigo-700">IA</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                En IntelliData, convertimos la complejidad de tus datos en información clara y accionable, impulsando el crecimiento y la eficiencia de tu negocio.
+            </p>
+            <a href="#servicios" id="iniciemos-button" class="inline-block bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                Iniciemos
+            </a>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="nosotros" class="bg-white py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2 text-center md:text-left">
+                <h2 class="text-4xl font-extrabold text-gray-900 mb-6">
+                    ¿Quiénes Somos?
+                </h2>
+                <p class="text-lg text-gray-700 mb-6">
+                    Somos IntelliData, líderes en análisis de datos potenciado por inteligencia artificial. Nuestro equipo de expertos combina conocimiento profundo del negocio con las últimas tecnologías de IA para ofrecerte insights predictivos y soluciones optimizadas.
+                </p>
+                <p class="text-lg text-gray-700">
+                    Nos dedicamos a liberar el verdadero potencial de tus datos, permitiéndote tomar decisiones estratégicas basadas en evidencia y no en suposiciones.
+                </p>
+            </div>
+            <div class="md:w-1/2 flex justify-center items-center">
+                <!-- Simple SVG Illustration for Data Analytics/AI -->
+                <svg class="w-64 h-64 text-indigo-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.47-7-7.23 0-2.45 1.09-4.63 2.82-6.14l.86.86a6.014 6.014 0 013.32-1.92V4h2v3.01c.7.13 1.37.39 2 .73l.86-.86C18.91 7.37 20 9.55 20 12c0 3.76-3.05 6.74-7 7.23v-.01zM11 16h2v-4h4v-2h-4V7h-2v4H7v2h4v3z"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="servicios" class="bg-indigo-50 py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Nuestros Servicios Potenciados por IA
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service Card 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-center flex flex-col">
+                    <div class="text-indigo-700 mb-4">
+                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13m-6 2l6-3m-6 3v-2.25M9 19c-1.006 0-1.994-.083-3-2.75V9.5M9 19c-1.006 0-1.994-.083-3-2.75V9.5m0 0C6 10.75 4 13.5 4 16.5s2 4 2 4M20 20L4 4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-3">Análisis Predictivo</h3>
+                    <p class="text-gray-600 mb-6 flex-grow">
+                        Anticipa tendencias futuras, identifica riesgos y oportunidades con modelos predictivos avanzados.
+                    </p>
+                    <div class="mt-auto">
+                        <p class="text-lg font-bold text-gray-800 mb-2 line-through">Precio Regular: $199/mes</p>
+                        <p class="text-3xl font-extrabold text-indigo-700 mb-4">Oferta: $149/mes</p>
+                        <a href="#contacto-form-section" class="inline-block bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 contact-trigger-button">
+                            Comprar Ahora
+                        </a>
+                    </div>
+                </div>
+                <!-- Service Card 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-center flex flex-col">
+                    <div class="text-indigo-700 mb-4">
+                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-3">Optimización de Procesos</h3>
+                    <p class="text-gray-600 mb-6 flex-grow">
+                        Mejora la eficiencia operativa y reduce costos identificando cuellos de botella y optimizando flujos de trabajo.
+                    </p>
+                    <div class="mt-auto">
+                        <p class="text-lg font-bold text-gray-800 mb-2 line-through">Precio Regular: $249/mes</p>
+                        <p class="text-3xl font-extrabold text-indigo-700 mb-4">Oferta: $189/mes</p>
+                        <a href="#contacto-form-section" class="inline-block bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 contact-trigger-button">
+                            Comprar Ahora
+                        </a>
+                    </div>
+                </div>
+                <!-- Service Card 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-center flex flex-col">
+                    <div class="text-indigo-700 mb-4">
+                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M18 10h4M2 10h4M12 2v4M12 18v4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-3">Visualización Interactiva</h3>
+                    <p class="text-gray-600 mb-6 flex-grow">
+                        Transforma datos complejos en dashboards intuitivos y reportes visuales que facilitan la comprensión.
+                    </p>
+                    <div class="mt-auto">
+                        <p class="text-lg font-bold text-gray-800 mb-2 line-through">Precio Regular: $179/mes</p>
+                        <p class="text-3xl font-extrabold text-indigo-700 mb-4">Oferta: $129/mes</p>
+                        <a href="#contacto-form-section" class="inline-block bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 contact-trigger-button">
+                            Comprar Ahora
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonios" class="bg-white py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Lo que Dicen Nuestros Clientes
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-indigo-50 p-8 rounded-xl shadow-lg text-center">
+                    <p class="text-lg text-gray-700 italic mb-6">
+                        "IntelliData ha transformado por completo la forma en que entendemos nuestros datos. Sus análisis predictivos nos han permitido tomar decisiones proactivas que han impulsado nuestro crecimiento de manera significativa."
+                    </p>
+                    <p class="font-semibold text-indigo-800">- Ana Gómez, CEO de InnovaTech</p>
+                </div>
+                <div class="bg-indigo-50 p-8 rounded-xl shadow-lg text-center">
+                    <p class="text-lg text-gray-700 italic mb-6">
+                        "La visualización interactiva de datos que nos proporcionó IntelliData es simplemente asombrosa. Ahora podemos identificar tendencias y anomalías en segundos, algo que antes nos tomaba días."
+                    </p>
+                    <p class="font-semibold text-indigo-800">- Ricardo Morales, Director de Operaciones en GlobalRetail</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Recommender Section (AI FEATURE 1) -->
+    <section id="service-recommender" class="bg-indigo-50 py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Recomendador de Servicios con IA 🤖
+            </h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg text-center">
+                <p class="text-lg text-gray-700 mb-6">
+                    Describe brevemente tu negocio o el desafío que enfrentas y nuestra IA te sugerirá el servicio más adecuado.
+                </p>
+                <div class="mb-6">
+                    <label for="industry-input" class="block text-gray-700 text-sm font-bold mb-2">Tu Industria:</label>
+                    <input type="text" id="industry-input" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Retail, Finanzas, Salud">
+                </div>
+                <div class="mb-6">
+                    <label for="challenge-input" class="block text-gray-700 text-sm font-bold mb-2">Tu Desafío Principal:</label>
+                    <textarea id="challenge-input" rows="3" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Reducir costos, mejorar la retención de clientes, optimizar inventario"></textarea>
+                </div>
+                <button id="recommend-service-button" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                    Recomendar Servicio
+                </button>
+                <div id="service-recommendation-output" class="mt-8 p-6 bg-gray-100 rounded-lg text-gray-800 max-w-xl mx-auto text-center min-h-[80px] flex items-center justify-center">
+                    <!-- AI recommendation will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interesting Graphics Section (D3.js Charts - AI FEATURE 2 ENHANCEMENT) -->
+    <section class="bg-white py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Impulsando el Crecimiento con Datos
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Bar Chart -->
+                <div class="flex justify-center flex-col items-center">
+                    <div id="bar-chart-area" class="chart-container">
+                        <h3 class="chart-title">Eficiencia Operativa Aumentada por IA (Últimos 5 años)</h3>
+                        <!-- D3 bar chart will be rendered here -->
+                    </div>
+                    <button id="bar-chart-insight-button" class="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                        Generar Insight ✨
+                    </button>
+                    <div id="bar-chart-insight-output" class="mt-4 p-4 bg-gray-100 rounded-lg text-gray-800 max-w-lg text-sm text-center min-h-[50px] flex items-center justify-center">
+                        <!-- AI general insight will be displayed here -->
+                    </div>
+                    <div class="mt-6 w-full max-w-lg">
+                        <label for="bar-chart-question-input" class="block text-gray-700 text-sm font-bold mb-2 text-left">Pregunta específica sobre el gráfico:</label>
+                        <input type="text" id="bar-chart-question-input" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3" placeholder="Ej: ¿Cuál fue el año de mayor eficiencia?">
+                        <button id="bar-chart-ask-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                            Preguntar a la IA
+                        </button>
+                        <div id="bar-chart-answer-output" class="mt-4 p-4 bg-blue-50 rounded-lg text-blue-800 max-w-lg text-sm text-center min-h-[50px] flex items-center justify-center">
+                            <!-- AI answer to specific question will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Line Chart -->
+                <div class="flex justify-center flex-col items-center">
+                    <div id="line-chart-area" class="chart-container">
+                        <h3 class="chart-title">Tendencias de Crecimiento de Clientes</h3>
+                        <!-- D3 line chart will be rendered here -->
+                    </div>
+                    <button id="line-chart-insight-button" class="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                        Generar Insight ✨
+                    </button>
+                    <div id="line-chart-insight-output" class="mt-4 p-4 bg-gray-100 rounded-lg text-gray-800 max-w-lg text-sm text-center min-h-[50px] flex items-center justify-center">
+                        <!-- AI general insight will be displayed here -->
+                    </div>
+                    <div class="mt-6 w-full max-w-lg">
+                        <label for="line-chart-question-input" class="block text-gray-700 text-sm font-bold mb-2 text-left">Pregunta específica sobre el gráfico:</label>
+                        <input type="text" id="line-chart-question-input" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3" placeholder="Ej: ¿Cuántos clientes hubo en 2022?">
+                        <button id="line-chart-ask-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                            Preguntar a la IA
+                        </button>
+                        <div id="line-chart-answer-output" class="mt-4 p-4 bg-blue-50 rounded-lg text-blue-800 max-w-lg text-sm text-center min-h-[50px] flex items-center justify-center">
+                            <!-- AI answer to specific question will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slogan Generator Section (AI FEATURE 3) -->
+    <section id="slogan-generator" class="bg-indigo-50 py-16 lg:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Generador de Slogans de Marketing con IA 💡
+            </h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg text-center">
+                <p class="text-lg text-gray-700 mb-6">
+                    Ingresa una palabra clave o un concepto y nuestra IA generará ideas de slogans creativos para tu negocio o campaña.
+                </p>
+                <div class="mb-6">
+                    <label for="slogan-keyword-input" class="block text-gray-700 text-sm font-bold mb-2">Palabra clave o Tema:</label>
+                    <input type="text" id="slogan-keyword-input" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Datos, Innovación, Crecimiento">
+                </div>
+                <button id="generate-slogan-button" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                    Generar Slogans
+                </button>
+                <div id="slogan-output" class="mt-8 p-6 bg-gray-100 rounded-lg text-gray-800 max-w-xl mx-auto text-center min-h-[80px] flex items-center justify-center">
+                    <!-- AI generated slogans will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Contact Form Section -->
+    <section id="contacto-form-section" class="bg-indigo-50 py-16 lg:py-24 contact-form-transition hidden">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">
+                Ponte en Contacto con Nosotros
+            </h2>
+            <form id="contact-form" class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="mb-6">
+                    <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nombre Completo:</label>
+                    <input type="text" id="name" name="name" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Tu nombre">
+                </div>
+                <div class="mb-6">
+                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico:</label>
+                    <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="tu.correo@ejemplo.com">
+                </div>
+                <div class="mb-6">
+                    <label for="company" class="block text-gray-700 text-sm font-bold mb-2">Empresa (Opcional):</label>
+                    <input type="text" id="company" name="company" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nombre de tu empresa">
+                </div>
+                <div class="mb-6">
+                    <label for="message" class="block text-gray-700 text-sm font-bold mb-2">Mensaje:</label>
+                    <textarea id="message" name="message" rows="5" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Describe tu consulta o proyecto"></textarea>
+                </div>
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                        Enviar Mensaje
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 py-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-extrabold text-white mb-6">¿Listo para Impulsar tu Negocio?</h2>
+            <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Agenda una consulta gratuita y descubre cómo IntelliData puede transformar tus datos en tu mayor activo.
+            </p>
+            <a href="#contacto-form-section" id="footer-contact-button" class="inline-block bg-white hover:bg-gray-100 text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105">
+                Contáctanos Hoy
+            </a>
+            <div class="mt-10 text-sm text-gray-400">
+                <p>&copy; 2025 IntelliData. Todos los derechos reservados.</p>
+                <div class="mt-2 space-x-4">
+                    <a href="#" class="hover:text-indigo-400 transition-colors duration-200">Política de Privacidad</a>
+                    <a href="#" class="hover:text-indigo-400 transition-colors duration-200">Términos de Servicio</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <div id="scroll-to-top-button">
+        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L6 8h4v12h4V8h4L12 2z"/>
+        </svg>
+    </div>
+
+    <!-- Chatbot Bubble -->
+    <div id="chatbot-bubble">
+        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+        </svg>
+    </div>
+
+    <!-- Chatbot Window -->
+    <div id="chatbot-window">
+        <div id="chatbot-header">
+            <span>Asistente de IntelliData</span>
+            <button class="close-button" id="chatbot-close-button">&times;</button>
+        </div>
+        <div id="frequent-questions" class="flex flex-wrap gap-2 justify-center">
+            <button class="freq-q-button" data-question="¿Qué es IntelliData?">¿Qué es IntelliData?</button>
+            <button class="freq-q-button" data-question="¿Qué servicios ofrecen?">¿Qué servicios ofrecen?</button>
+            <button class="freq-q-button" data-question="¿Cómo funciona el análisis predictivo?">¿Cómo funciona el análisis predictivo?</button>
+            <button class="freq-q-button" data-question="¿Cómo puedo contactarles?">¿Cómo puedo contactarles?</button>
+        </div>
+        <div id="chatbot-messages" class="flex flex-col">
+            <div class="message-ai message-bubble">¡Hola! Soy tu asistente de IntelliData. ¿En qué puedo ayudarte hoy?</div>
+        </div>
+        <div id="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu pregunta...">
+            <button id="chatbot-send-button">Enviar</button>
+        </div>
+    </div>
+
+    <!-- Global Modal Structure -->
+    <div id="global-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[2000] hidden">
+        <div id="global-modal-content">
+            <button id="modal-close-button">&times;</button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-gray-800"></h3>
+            <p id="modal-message" class="text-gray-700 text-lg"></p>
+        </div>
+    </div>
+
+    <!-- Floating Message Container -->
+    <div id="floating-message-container">
+        <!-- Messages will appear here -->
+    </div>
+
+    <script>
+        // --- API Key Configuration (for local testing) ---
+        // ¡IMPORTANTE! Para ejecutar esto localmente, reemplaza "TU_API_KEY_AQUI" con tu clave de API de Gemini.
+        // Para despliegues en el entorno de Canvas, déjalo como "".
+        const GEMINI_API_KEY = "AIzaSyCRbycihlS0inJ_ASBdYaChRv8xadS8bY4"; // Clave de API proporcionada
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Get the contact form section element
+        const contactFormSection = document.getElementById('contacto-form-section');
+        const contactForm = document.getElementById('contact-form');
+
+        // Function to toggle the visibility of the contact form
+        function toggleContactForm(event) {
+            event.preventDefault(); // Prevent default anchor behavior
+            contactFormSection.classList.toggle('hidden');
+            contactFormSection.classList.toggle('visible'); // Add/remove visible class for transition
+
+            if (contactFormSection.classList.contains('visible')) {
+                // Scroll to the form if it becomes visible
+                contactFormSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Attach click listener to all navigation links and specific buttons
+        document.querySelectorAll('.nav-link, #iniciemos-button, .contact-trigger-button').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement && targetId === '#contacto-form-section') {
+                    // Special handling for contact form: toggle visibility instead of just scrolling
+                    toggleContactForm(e);
+                } else if (targetElement) {
+                    // For other links, just scroll smoothly
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Attach click listener to the footer contact button
+        document.getElementById('footer-contact-button').addEventListener('click', toggleContactForm);
+
+        // --- Common D3 Chart Dimensions ---
+        const margin = { top: 40, right: 30, bottom: 60, left: 70 };
+        const chartWidth = 500 - margin.left - margin.right;
+        const chartHeight = 300 - margin.top - margin.bottom;
+
+        // Tooltip (re-used for all charts)
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "chart-tooltip")
+            .style("opacity", 0);
+
+        // --- Bar Chart Logic ---
+        const barData = [
+            { year: "2020", efficiency: 55 },
+            { year: "2021", efficiency: 68 },
+            { year: "2022", efficiency: 75 },
+            { year: "2023", efficiency: 82 },
+            { year: "2024", efficiency: 90 }
+        ];
+
+        const barSvg = d3.select("#bar-chart-area")
+            .append("svg")
+            .attr("width", chartWidth + margin.left + margin.right)
+            .attr("height", chartHeight + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const barXScale = d3.scaleBand()
+            .domain(barData.map(d => d.year))
+            .range([0, chartWidth])
+            .padding(0.4);
+
+        const barYScale = d3.scaleLinear()
+            .domain([0, 100]) // Efficiency from 0% to 100%
+            .range([chartHeight, 0]);
+
+        // Add X axis
+        barSvg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(0,${chartHeight})`)
+            .call(d3.axisBottom(barXScale))
+            .selectAll("text")
+            .attr("font-size", "14px");
+
+        // Add Y axis
+        barSvg.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(barYScale).ticks(5))
+            .selectAll("text")
+            .attr("font-size", "14px");
+
+        // Axis Labels
+        barSvg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", chartWidth / 2)
+            .attr("y", chartHeight + margin.bottom - 10)
+            .attr("font-size", "14px")
+            .attr("fill", "#475569")
+            .text("Año");
+
+        barSvg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("y", -margin.left + 25)
+            .attr("x", -chartHeight / 2)
+            .attr("dy", "1em")
+            .attr("transform", "rotate(-90)")
+            .attr("font-size", "14px")
+            .attr("fill", "#475569")
+            .text("Eficiencia (%)");
+
+        // Bars with animation
+        barSvg.selectAll(".bar")
+            .data(barData)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", d => barXScale(d.year))
+            .attr("y", chartHeight) // Start from bottom for animation
+            .attr("width", barXScale.bandwidth())
+            .attr("height", 0) // Start with 0 height for animation
+            .attr("fill", "#6366f1") /* Tailwind indigo-500 */
+            .attr("rx", 6) /* Rounded corners for bars */
+            .transition() // Animation
+            .duration(800)
+            .delay((d, i) => i * 100)
+            .attr("y", d => barYScale(d.efficiency))
+            .attr("height", d => chartHeight - barYScale(d.efficiency));
+
+        // Interaction for bars
+        barSvg.selectAll(".bar")
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("fill", "#4338ca") /* Tailwind indigo-700 on hover */
+                    .attr("transform", `translate(0, -5)`) // Slight lift effect
+                    .attr("opacity", 0.9);
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html(`Año: <strong>${d.year}</strong><br/>Eficiencia: <strong>${d.efficiency}%</strong>`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("fill", "#6366f1")
+                    .attr("transform", `translate(0, 0)`)
+                    .attr("opacity", 1);
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
+        // --- Line Chart Logic ---
+        const lineData = [
+            { year: "2020", clients: 120 },
+            { year: "2021", clients: 150 },
+            { year: "2022", clients: 200 },
+            { year: "2023", clients: 280 },
+            { year: "2024", clients: 350 }
+        ];
+
+        const lineSvg = d3.select("#line-chart-area")
+            .append("svg")
+            .attr("width", chartWidth + margin.left + margin.right)
+            .attr("height", chartHeight + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const lineXScale = d3.scalePoint() // Use scalePoint for discrete x-axis
+            .domain(lineData.map(d => d.year))
+            .range([0, chartWidth]);
+
+        const lineYScale = d3.scaleLinear()
+            .domain([0, d3.max(lineData, d => d.clients) + 50])
+            .range([chartHeight, 0]);
+
+        // Add X axis
+        lineSvg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(0,${chartHeight})`)
+            .call(d3.axisBottom(lineXScale))
+            .selectAll("text")
+            .attr("font-size", "14px");
+
+        // Add Y axis
+        lineSvg.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(lineYScale).ticks(5))
+            .selectAll("text")
+            .attr("font-size", "14px");
+
+        // Axis Labels
+        lineSvg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", chartWidth / 2)
+            .attr("y", chartHeight + margin.bottom - 10)
+            .attr("font-size", "14px")
+            .attr("fill", "#475569")
+            .text("Año");
+
+        lineSvg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("y", -margin.left + 25)
+            .attr("x", -chartHeight / 2)
+            .attr("dy", "1em")
+            .attr("transform", "rotate(-90)")
+            .attr("font-size", "14px")
+            .attr("fill", "#475569")
+            .text("Número de Clientes");
+
+        const line = d3.line()
+            .x(d => lineXScale(d.year))
+            .y(d => lineYScale(d.clients));
+
+        // Area under the line
+        const area = d3.area()
+            .x(d => lineXScale(d.year))
+            .y0(chartHeight)
+            .y1(d => lineYScale(d.clients));
+
+        lineSvg.append("path")
+            .datum(lineData)
+            .attr("class", "area")
+            .attr("fill", "url(#line-gradient)") // Use a gradient for the area
+            .attr("opacity", 0.7)
+            .attr("d", area);
+
+        // Define a gradient for the line chart area
+        const lineGradient = lineSvg.append("defs").append("linearGradient")
+            .attr("id", "line-gradient")
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+        lineGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#34d399"); // Tailwind emerald-400
+        lineGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#d1fae5"); // Tailwind emerald-100
+
+        // Line path with animation
+        const path = lineSvg.append("path")
+            .datum(lineData)
+            .attr("fill", "none")
+            .attr("stroke", "#10b981") /* Tailwind emerald-500 */
+            .attr("stroke-width", 4)
+            .attr("d", line);
+
+        const totalLength = path.node().getTotalLength();
+
+        path.attr("stroke-dasharray", totalLength + " " + totalLength)
+            .attr("stroke-dashoffset", totalLength)
+            .transition()
+            .duration(1500)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0);
+
+        // Points on the line with interaction
+        lineSvg.selectAll(".dot")
+            .data(lineData)
+            .enter().append("circle")
+            .attr("class", "line-dot")
+            .attr("cx", d => lineXScale(d.year))
+            .attr("cy", d => lineYScale(d.clients))
+            .attr("r", 7)
+            .attr("fill", "#10b981")
+            .attr("stroke", "white")
+            .attr("stroke-width", 2)
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("r", 9)
+                    .attr("fill", "#059669") /* Darker emerald on hover */
+                    .attr("stroke", "#10b981")
+                    .attr("stroke-width", 4);
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html(`Año: <strong>${d.year}</strong><br/>Clientes: <strong>${d.clients}</strong>`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("fill", "#10b981")
+                    .attr("transform", `translate(0, 0)`)
+                    .attr("opacity", 1);
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
+        // --- Gemini API Integration Functions ---
+        async function callGeminiAPI(prompt, outputElement) {
+            outputElement.innerHTML = '<span class="loading-spinner"></span> Generando...'; // Loading indicator
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+
+            const maxRetries = 3;
+            let currentRetry = 0;
+            let response;
+            while (currentRetry < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        break; // Success! Exit loop
+                    } else if (response.status === 429) { // Too Many Requests
+                        const delay = Math.pow(2, currentRetry) * 1000; // Exponential backoff
+                        console.warn(`Demasiadas solicitudes. Reintentando en ${delay / 1000} segundos...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        currentRetry++;
+                    } else {
+                        throw new Error(`Error API: ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    outputElement.innerHTML = `<span class="text-red-500">Error: ${error.message}</span>`;
+                    console.error('Error al llamar a la API de Gemini:', error);
+                    return; // Exit if a non-retryable error occurs
+                }
+            }
+
+            if (!response || !response.ok) {
+                outputElement.innerHTML = `<span class="text-red-500">Error al obtener el resultado después de ${maxRetries} intentos.</span>`;
+                return;
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
+            } else {
+                console.error('Estructura de respuesta inesperada de la API de Gemini:', result);
+                return '<span class="text-red-500">No se pudo generar el contenido.</span>';
+            }
+        }
+
+        // --- AI Feature 1: Service Recommender Logic ---
+        document.getElementById('recommend-service-button').addEventListener('click', async () => {
+            const industry = document.getElementById('industry-input').value;
+            const challenge = document.getElementById('challenge-input').value;
+            const outputElement = document.getElementById('service-recommendation-output');
+
+            if (!industry || !challenge) {
+                outputElement.innerHTML = '<span class="text-red-500">Por favor, rellena ambos campos.</span>';
+                return;
+            }
+
+            const prompt = `Soy una empresa en la industria de ${industry} y mi principal desafío es ${challenge}. Basado en los servicios que ofrece IntelliData (Análisis Predictivo, Optimización de Procesos, Visualización Interactiva), ¿cuál me recomendarías y por qué? Sé conciso y ve directo al grano, máximo 3 oraciones.`;
+            const recommendation = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = recommendation;
+        });
+
+        // --- AI Feature 2: Interactive Chart Q&A Logic ---
+        // General Insight Buttons (existing functionality)
+        document.getElementById('bar-chart-insight-button').addEventListener('click', async () => {
+            const outputElement = document.getElementById('bar-chart-insight-output');
+            const formattedData = barData.map(d => `${d.year}: ${d.efficiency}%`).join(', ');
+            const prompt = `Analiza los siguientes datos de eficiencia operativa a lo largo de los años y proporciona una conclusión concisa en español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
+            const insight = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = insight;
+        });
+
+        document.getElementById('line-chart-insight-button').addEventListener('click', async () => {
+            const outputElement = document.getElementById('line-chart-insight-output');
+            const formattedData = lineData.map(d => `${d.year}: ${d.clients} clientes`).join(', ');
+            const prompt = `Analiza los siguientes datos de crecimiento de clientes a lo largo de los años y proporciona una conclusión concisa en español (máximo 2 oraciones) que resalte la tendencia principal y su posible implicación para una empresa de análisis de datos con IA: ${formattedData}.`;
+            const insight = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = insight;
+        });
+
+        // Specific Question Buttons for Charts (NEW)
+        document.getElementById('bar-chart-ask-button').addEventListener('click', async () => {
+            const question = document.getElementById('bar-chart-question-input').value.trim();
+            const outputElement = document.getElementById('bar-chart-answer-output');
+            if (!question) {
+                outputElement.innerHTML = '<span class="text-red-500">Por favor, escribe tu pregunta.</span>';
+                return;
+            }
+            const formattedData = JSON.stringify(barData); // Send data as JSON for detailed questions
+            const prompt = `Basado en los siguientes datos de eficiencia operativa (${formattedData}), responde a la pregunta en español: "${question}". Sé conciso.`;
+            const answer = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = answer;
+        });
+
+        document.getElementById('line-chart-ask-button').addEventListener('click', async () => {
+            const question = document.getElementById('line-chart-question-input').value.trim();
+            const outputElement = document.getElementById('line-chart-answer-output');
+            if (!question) {
+                outputElement.innerHTML = '<span class="text-red-500">Por favor, escribe tu pregunta.</span>';
+                return;
+            }
+            const formattedData = JSON.stringify(lineData); // Send data as JSON for detailed questions
+            const prompt = `Basado en los siguientes datos de crecimiento de clientes (${formattedData}), responde a la pregunta en español: "${question}". Sé conciso.`;
+            const answer = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = answer;
+        });
+
+        // --- AI Feature 3: Slogan Generator Logic ---
+        document.getElementById('generate-slogan-button').addEventListener('click', async () => {
+            const keyword = document.getElementById('slogan-keyword-input').value.trim();
+            const outputElement = document.getElementById('slogan-output');
+            if (!keyword) {
+                outputElement.innerHTML = '<span class="text-red-500">Por favor, ingresa una palabra clave.</span>';
+                return;
+            }
+            const prompt = `Genera 3 ideas de slogans de marketing cortos y atractivos en español para una empresa de análisis de datos con IA, basados en la palabra clave/tema: "${keyword}". Numéralos.`;
+            const slogans = await callGeminiAPI(prompt, outputElement);
+            outputElement.innerHTML = slogans;
+        });
+
+        // --- Chatbot Logic (Existing, but included for completeness) ---
+        const chatbotBubble = document.getElementById('chatbot-bubble');
+        const chatbotWindow = document.getElementById('chatbot-window');
+        const chatbotCloseButton = document.getElementById('chatbot-close-button');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotSendButton = document.getElementById('chatbot-send-button');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const frequentQuestionsDiv = document.getElementById('frequent-questions');
+
+        // Note: chatHistory is managed internally for continuity
+        let chatHistory = [{ role: "model", parts: [{ text: "¡Hola! Soy tu asistente de IntelliData. ¿En qué puedo ayudarte hoy?" }] }];
+
+        // Function to display a message in the chat window
+        function displayMessage(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message-bubble');
+            if (sender === 'user') {
+                messageElement.classList.add('message-user');
+            } else {
+                messageElement.classList.add('message-ai');
+            }
+            messageElement.textContent = message;
+            chatbotMessages.appendChild(messageElement);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight; // Scroll to bottom
+        }
+
+        // Function to add a loading indicator for chatbot
+        function addChatbotLoadingIndicator() {
+            const loadingElement = document.createElement('div');
+            loadingElement.classList.add('message-bubble', 'message-loading');
+            loadingElement.innerHTML = '<span class="loading-spinner"></span> Escribiendo...';
+            chatbotMessages.appendChild(loadingElement);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            return loadingElement;
+        }
+
+        // Function to remove loading indicator for chatbot
+        function removeChatbotLoadingIndicator(element) {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }
+
+        // Send message to Gemini API for chatbot
+        async function getChatbotResponse(userMessage) {
+            displayMessage(userMessage, 'user');
+            chatbotInput.value = ''; // Clear input
+
+            chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+
+            const loadingMessage = addChatbotLoadingIndicator();
+
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+
+            const maxRetries = 3;
+            let currentRetry = 0;
+            let response;
+            try {
+                while (currentRetry < maxRetries) {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        break;
+                    } else if (response.status === 429) {
+                        const delay = Math.pow(2, currentRetry) * 1000;
+                        console.warn(`Chatbot: Demasiadas solicitudes. Reintentando en ${delay / 1000} segundos...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        currentRetry++;
+                    } else {
+                        throw new Error(`Error API del Chatbot: ${response.status} ${response.statusText}`);
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`Error al obtener respuesta después de ${maxRetries} intentos.`);
+                }
+
+                const result = await response.json();
+                removeChatbotLoadingIndicator(loadingMessage);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    displayMessage(aiText, 'ai');
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                } else {
+                    displayMessage("Lo siento, no pude entender eso. Por favor, intenta reformular tu pregunta.", 'ai');
+                    console.error('Estructura de respuesta inesperada del Chatbot:', result);
+                }
+            } catch (error) {
+                removeChatbotLoadingIndicator(loadingMessage);
+                displayMessage(`Lo siento, hubo un error al procesar tu solicitud: ${error.message}. Por favor, inténtalo de nuevo.`, 'ai');
+                console.error('Error al llamar a la API del Chatbot:', error);
+            }
+        }
+
+        // Event listener for chatbot send button
+        chatbotSendButton.addEventListener('click', () => {
+            const message = chatbotInput.value.trim();
+            if (message) {
+                getChatbotResponse(message);
+            }
+        });
+
+        // Event listener for Enter key in chatbot input field
+        chatbotInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                chatbotSendButton.click();
+            }
+        });
+
+        // Event listener for frequent questions buttons in chatbot
+        frequentQuestionsDiv.addEventListener('click', (e) => {
+            if (e.target.classList.contains('freq-q-button')) {
+                const question = e.target.dataset.question;
+                getChatbotResponse(question);
+            }
+        });
+
+        // Toggle chatbot window visibility
+        chatbotBubble.addEventListener('click', () => {
+            chatbotWindow.classList.toggle('open');
+        });
+
+        chatbotCloseButton.addEventListener('click', () => {
+            chatbotWindow.classList.remove('open');
+        });
+
+
+        // --- Scroll to Top Button Logic ---
+        const scrollToTopButton = document.getElementById('scroll-to-top-button');
+
+        // Show/hide button based on scroll position
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) { // Show button after scrolling 200px down
+                scrollToTopButton.classList.add('visible');
+            } else {
+                scrollToTopButton.classList.remove('visible');
+            }
+        });
+
+        // Scroll to top on button click
+        scrollToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // Smooth scroll animation
+            });
+        });
+
+        // --- Global Modal Logic ---
+        const globalModal = document.getElementById('global-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseButton = document.getElementById('modal-close-button');
+
+        function showModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            globalModal.classList.remove('hidden');
+            // Force reflow to ensure transition plays
+            void globalModal.offsetWidth;
+            globalModal.classList.add('show');
+        }
+
+        function hideModal() {
+            globalModal.classList.remove('show');
+            globalModal.addEventListener('transitionend', function handler() {
+                globalModal.classList.add('hidden');
+                globalModal.removeEventListener('transitionend', handler);
+            });
+        }
+
+        modalCloseButton.addEventListener('click', hideModal);
+
+        // Show welcome modal on page load
+        window.addEventListener('load', () => {
+            showModal(
+                "¡Bienvenido a IntelliData!",
+                "Descubre cómo la inteligencia artificial transforma tus datos en decisiones estratégicas inteligentes."
+            );
+            // Start floating messages after welcome modal closes
+            setTimeout(() => {
+                startFloatingMessages();
+            }, 3000); // Give some time after modal, adjust as needed
+        });
+
+        // Handle contact form submission
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent actual form submission
+
+            // Here you would typically send form data to a backend
+            console.log("Formulario enviado. (Simulación)");
+            console.log("Nombre:", document.getElementById('name').value);
+            console.log("Email:", document.getElementById('email').value);
+            console.log("Empresa:", document.getElementById('company').value);
+            console.log("Mensaje:", document.getElementById('message').value);
+
+            showModal(
+                "¡Mensaje Enviado!",
+                "Gracias por contactarnos. Nos pondremos en contacto contigo pronto para discutir tus necesidades de datos."
+            );
+            contactForm.reset(); // Clear the form
+        });
+
+        // --- Floating Message Logic ---
+        const floatingMessageContainer = document.getElementById('floating-message-container');
+        const floatingMessages = [
+            "✨ ¡Bienvenido a IntelliData!",
+            "💡 Tip: ¡Explora nuestros gráficos interactivos!",
+            "🤖 Pregúntale a nuestro chatbot si tienes dudas.",
+            "📊 La inteligencia artificial potencia tus datos.",
+            "🚀 Optimiza tus procesos con insights predictivos.",
+            "🌟 ¿Necesitas un slogan? ¡Usa nuestro generador IA!",
+            "📈 Transforma tus datos en crecimiento."
+        ];
+        let messageInterval;
+
+        function displayFloatingMessage(message) {
+            floatingMessageContainer.textContent = message;
+            floatingMessageContainer.classList.remove('hide');
+            floatingMessageContainer.classList.add('show');
+
+            setTimeout(() => {
+                floatingMessageContainer.classList.remove('show');
+                floatingMessageContainer.classList.add('hide');
+            }, 5000); // Message visible for 5 seconds
+        }
+
+        function startFloatingMessages() {
+            // Display initial message
+            const initialRandomIndex = Math.floor(Math.random() * floatingMessages.length);
+            displayFloatingMessage(floatingMessages[initialRandomIndex]);
+
+            // Start interval for subsequent messages
+            messageInterval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * floatingMessages.length);
+                displayFloatingMessage(floatingMessages[randomIndex]);
+            }, 15000); // New message every 15 seconds
+        }
+
+        // Optional: clear interval if user navigates away or closes tab (not strictly necessary for this simple app)
+        // window.addEventListener('beforeunload', () => {
+        //     clearInterval(messageInterval);
+        // });
+
+    </script>
+
+</body>
+</html>
