@@ -37,7 +37,7 @@
                   <!-- Dashboard button -->
                   <button
                     onclick="window.location.href='ControlPanel.html'"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#f0f2f5] w-full hover:bg-[#e4e7eb] transition-colors"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg w-full hover:bg-[#f0f2f5] transition-colors"
                   >
                     <div class="text-[#111418]" data-icon="House" data-size="24px" data-weight="fill">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -108,10 +108,11 @@
                     </div>
                     <p class="text-[#111418] text-sm font-medium leading-normal">Datos de administrador</p>
                   </button>
+
                   <!-- AI Processing button -->
                   <button
                     onclick="window.location.href='IAProcessing.html'"
-                    class="flex items-center gap-3 px-3 py-2 w-full hover:bg-[#f0f2f5] rounded-lg transition-colors"
+                    class="flex items-center gap-3 px-3 py-2 w-full rounded-lg bg-[#f0f2f5] transition-colors"
                   >
                     <div class="text-[#111418]" data-icon="Settings" data-size="24px" data-weight="regular">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -128,184 +129,148 @@
           </div>
           <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
             <div class="flex flex-wrap justify-between gap-3 p-4">
-              <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight min-w-72">Admin Monitor Dashboard</p>
-            </div>
-            <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Monitoring</h2>
-            <div class="flex flex-wrap gap-4 p-4">
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#f0f2f5]">
-                <p class="text-[#111418] text-base font-medium leading-normal" href= "quickdiagnostics.htm">Express Data Diagnostics</p>
-                <p class="text-[#111418] tracking-light text-2xl font-bold leading-tight">Active</p>
-              </div>
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#f0f2f5]">
-                <p class="text-[#111418] text-base font-medium leading-normal">Proactive Custom Brain</p>
-                <p class="text-[#111418] tracking-light text-2xl font-bold leading-tight">Inactive</p>
-              </div>
-              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#f0f2f5]">
-                <p class="text-[#111418] text-base font-medium leading-normal">Strategic Control Panel</p>
-                <p class="text-[#111418] tracking-light text-2xl font-bold leading-tight">Active</p>
+              <div class="flex min-w-72 flex-col gap-3">
+                <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight">Upload File for AI Processing</p>
+                <p class="text-[#60748a] text-sm font-normal leading-normal">
+                  Upload your file for AI-powered analysis. Supported file types include CSV, TXT, and JSON. Maximum file size is 100MB.
+                </p>
               </div>
             </div>
-            <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Data Visualization</h2>
-            <div class="flex flex-wrap gap-4 px-4 py-6">
-              <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-lg border border-[#dbe0e6] p-6">
-                <p class="text-[#111418] text-base font-medium leading-normal" href= "quickdiagnostics.htm">Express Data Diagnostics Usage</p>
-                <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight truncate">1200</p>
-                <div class="flex gap-1">
-                  <p class="text-[#60748a] text-base font-normal leading-normal">Last 30 Days</p>
-                  <p class="text-[#07883b] text-base font-medium leading-normal">+15%</p>
+            <div class="flex flex-col p-4">
+              <div class="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-[#dbe0e6] px-6 py-14">
+                <div class="flex max-w-[480px] flex-col items-center gap-2">
+                  <p class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">Drag and drop your file here, or</p>
+                  <p class="text-[#111418] text-sm font-normal leading-normal max-w-[480px] text-center">Browse Files</p>
                 </div>
-                <div class="flex min-h-[180px] flex-1 flex-col gap-8 py-4">
-                  <svg width="100%" height="148" viewBox="-3 0 478 150" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                    <path
-                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
-                      fill="url(#paint0_linear_1131_5935)"
-                    ></path>
-                    <path
-                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
-                      stroke="#60748a"
-                      stroke-width="3"
-                      stroke-linecap="round"
-                    ></path>
-                    <defs>
-                      <linearGradient id="paint0_linear_1131_5935" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#f0f2f5"></stop>
-                        <stop offset="1" stop-color="#f0f2f5" stop-opacity="0"></stop>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div class="flex justify-around">
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 1</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 5</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 10</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 15</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 20</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 25</p>
-                    <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Day 30</p>
-                  </div>
-                </div>
-              </div>
-              <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-lg border border-[#dbe0e6] p-6">
-                <p class="text-[#111418] text-base font-medium leading-normal">Proactive Custom Brain Activity</p>
-                <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight truncate">800</p>
-                <div class="flex gap-1">
-                  <p class="text-[#60748a] text-base font-normal leading-normal">Last 30 Days</p>
-                  <p class="text-[#e73908] text-base font-medium leading-normal">-5%</p>
-                </div>
-                <div class="grid min-h-[180px] grid-flow-col gap-6 grid-rows-[1fr_auto] items-end justify-items-center px-3">
-                  <div class="border-[#60748a] bg-[#f0f2f5] border-t-2 w-full" style="height: 90%;"></div>
-                  <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Week 1</p>
-                  <div class="border-[#60748a] bg-[#f0f2f5] border-t-2 w-full" style="height: 10%;"></div>
-                  <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Week 2</p>
-                  <div class="border-[#60748a] bg-[#f0f2f5] border-t-2 w-full" style="height: 30%;"></div>
-                  <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Week 3</p>
-                  <div class="border-[#60748a] bg-[#f0f2f5] border-t-2 w-full" style="height: 80%;"></div>
-                  <p class="text-[#60748a] text-[13px] font-bold leading-normal tracking-[0.015em]">Week 4</p>
-                </div>
+                <button
+                  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]"
+                >
+                  <span class="truncate">Upload File</span>
+                </button>
               </div>
             </div>
-            <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Admin Data Table</h2>
+            <div class="flex flex-col gap-3 p-4">
+              <div class="flex gap-6 justify-between"><p class="text-[#111418] text-base font-medium leading-normal">Processing</p></div>
+              <div class="rounded bg-[#dbe0e6]"><div class="h-2 rounded bg-[#111418]" style="width: 25%;"></div></div>
+              <p class="text-[#60748a] text-sm font-normal leading-normal">25% complete</p>
+            </div>
+            <p class="text-[#60748a] text-sm font-normal leading-normal pb-3 pt-1 px-4">File Processing Table</p>
             <div class="px-4 py-3 @container">
               <div class="flex overflow-hidden rounded-lg border border-[#dbe0e6] bg-white">
                 <table class="flex-1">
                   <thead>
                     <tr class="bg-white">
-                      <th class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">User ID</th>
-                      <th class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">Service</th>
-                      <th class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">Status</th>
-                      <th class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
-                        Privileges
+                      <th class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
+                        File Name
+                      </th>
+                      <th class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">Status</th>
+                      <th class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
+                        Uploaded At
+                      </th>
+                      <th class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 px-4 py-3 text-left text-[#111418] w-60 text-[#60748a] text-sm font-medium leading-normal">
+                        Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr class="border-t border-t-[#dbe0e6]">
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">1001</td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Express Data Diagnostics
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">
+                        report_2024-07-26.csv
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
                         <button
                           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-medium leading-normal w-full"
                         >
-                          <span class="truncate">Active</span>
+                          <span class="truncate">Completed</span>
                         </button>
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Full Access
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
+                        2024-07-26 10:00 AM
+                      </td>
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 h-[72px] px-4 py-2 w-60 text-[#60748a] text-sm font-bold leading-normal tracking-[0.015em]">
+                        View Report
                       </td>
                     </tr>
                     <tr class="border-t border-t-[#dbe0e6]">
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">1002</td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Proactive Custom Brain
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">
+                        data_analysis_2024-07-25.txt
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
                         <button
                           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-medium leading-normal w-full"
                         >
-                          <span class="truncate">Inactive</span>
+                          <span class="truncate">Processing</span>
                         </button>
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Read Only
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
+                        2024-07-25 02:30 PM
+                      </td>
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 h-[72px] px-4 py-2 w-60 text-[#60748a] text-sm font-bold leading-normal tracking-[0.015em]">
+                        View Progress
                       </td>
                     </tr>
                     <tr class="border-t border-t-[#dbe0e6]">
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">1003</td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Strategic Control Panel
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">
+                        sales_data_2024-07-24.json
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
                         <button
                           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-medium leading-normal w-full"
                         >
-                          <span class="truncate">Active</span>
+                          <span class="truncate">Failed</span>
                         </button>
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Full Access
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
+                        2024-07-24 09:15 AM
+                      </td>
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 h-[72px] px-4 py-2 w-60 text-[#60748a] text-sm font-bold leading-normal tracking-[0.015em]">
+                        View Details
                       </td>
                     </tr>
                     <tr class="border-t border-t-[#dbe0e6]">
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">1004</td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Express Data Diagnostics
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">
+                        customer_feedback_2024-07-23.csv
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
                         <button
                           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-medium leading-normal w-full"
                         >
-                          <span class="truncate">Active</span>
+                          <span class="truncate">Completed</span>
                         </button>
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Read Only
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
+                        2024-07-23 04:45 PM
+                      </td>
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 h-[72px] px-4 py-2 w-60 text-[#60748a] text-sm font-bold leading-normal tracking-[0.015em]">
+                        View Report
                       </td>
                     </tr>
                     <tr class="border-t border-t-[#dbe0e6]">
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">1005</td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Proactive Custom Brain
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">
+                        market_trends_2024-07-22.txt
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
                         <button
                           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-medium leading-normal w-full"
                         >
-                          <span class="truncate">Active</span>
+                          <span class="truncate">Completed</span>
                         </button>
                       </td>
-                      <td class="table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
-                        Full Access
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360 h-[72px] px-4 py-2 w-[400px] text-[#60748a] text-sm font-normal leading-normal">
+                        2024-07-22 11:20 AM
+                      </td>
+                      <td class="table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480 h-[72px] px-4 py-2 w-60 text-[#60748a] text-sm font-bold leading-normal tracking-[0.015em]">
+                        View Report
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <style>
-                          @container(max-width:120px){.table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-120{display: none;}}
-                @container(max-width:240px){.table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-240{display: none;}}
-                @container(max-width:360px){.table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-360{display: none;}}
-                @container(max-width:480px){.table-39006dcf-5496-42ea-9c21-d6893ebaecdb-column-480{display: none;}}
+                          @container(max-width:120px){.table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-120{display: none;}}
+                @container(max-width:240px){.table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-240{display: none;}}
+                @container(max-width:360px){.table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-360{display: none;}}
+                @container(max-width:480px){.table-ec3c9baa-03fe-49af-a2a8-e549bb5817bf-column-480{display: none;}}
               </style>
             </div>
           </div>
